@@ -1238,6 +1238,9 @@ RB_PROTOTYPE(binding_tree, binding, entry, binding_cmp);
 RB_GENERATE(binding_tree, binding, entry, binding_cmp);
 struct binding_tree                 bindings;
 
+char *strsepq(char **, const char *, const char);
+#include "strsepq.c"
+
 void
 cursors_load(void)
 {
@@ -7940,7 +7943,7 @@ parsebinding(const char *bindstr, uint16_t *mod, enum binding_type *type,
 	*mod = 0;
 	*flags = 0;
 	*type = KEYBIND;
-	while ((name = strsep(&cp, SWM_KEY_WS)) != NULL) {
+	while ((name = strsepq(&cp, SWM_KEY_WS, '"')) != NULL) {
 		DNPRINTF(SWM_D_KEY, "parsebinding: entry [%s]\n", name);
 		if (cp)
 			cp += (long)strspn(cp, SWM_KEY_WS);
@@ -8545,7 +8548,7 @@ parsequirks(const char *qstr, uint32_t *quirk, int *ws)
 		err(1, "parsequirks: strdup");
 
 	*quirk = 0;
-	while ((name = strsep(&cp, SWM_Q_DELIM)) != NULL) {
+	while ((name = strsepq(&cp, SWM_Q_DELIM, '"')) != NULL) {
 		if (cp)
 			cp += (long)strspn(cp, SWM_Q_DELIM);
 
@@ -8928,7 +8931,7 @@ setconfvalue(const char *selector, const char *value, int flags)
 			err(1, "setconfvalue: strdup");
 
 		/* If there are any non-XLFD entries, switch to Xft mode. */
-		while ((b = strsep(&sp, ",")) != NULL) {
+		while ((b = strsepq(&sp, ",", '"')) != NULL) {
 			if (*b == '\0')
 				continue;
 			if (!isxlfd(b)) {
@@ -9253,7 +9256,7 @@ setautorun(const char *selector, const char *value, int flags)
 	 * altering it in the parent after INSERT because this can not be a race
 	 */
 	a.argv = NULL;
-	while ((ap = strsep(&sp, " \t")) != NULL) {
+	while ((ap = strsepq(&sp, " \t", '"')) != NULL) {
 		if (*ap == '\0')
 			continue;
 		DNPRINTF(SWM_D_SPAWN, "setautorun: arg [%s]\n", ap);
